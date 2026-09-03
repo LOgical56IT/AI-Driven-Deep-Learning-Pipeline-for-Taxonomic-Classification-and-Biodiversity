@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DeepSea eDNA AI Explorer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="/static/css/styles.css" rel="stylesheet" />
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="hero">
+        <h1>DeepSea eDNA AI Explorer</h1>
+        <p class="subtitle">
+          Upload eDNA reads (FASTA). We encode sequences with k-mers, run
+          UMAP + HDBSCAN, and compute biodiversity metrics without a fixed reference database.
+          <br />Open <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a> after starting the server.
+        </p>
+      </div>
+
+      <section class="what-section open" id="what-section">
+        <div class="what-header" id="what-header">
+          <span>What are we actually doing?</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="what-body">
+          <ol>
+            <li><strong>You upload a FASTA file</strong> — DNA sequences from environmental samples (e.g. seawater eDNA).</li>
+            <li><strong>K-mer encoding</strong> — Each sequence is turned into a vector of short sub-sequence (k-mer) counts, so we can compare sequences without a reference genome.</li>
+            <li><strong>UMAP</strong> — We reduce that high-dimensional vector to 2D so we can visualize and cluster it.</li>
+            <li><strong>HDBSCAN</strong> — We find groups (clusters) of similar sequences; points that don’t fit any group are labeled as “noise” (−1).</li>
+            <li><strong>Biodiversity metrics</strong> — From cluster sizes we compute richness (number of clusters), Shannon diversity, and Simpson diversity.</li>
+            <li><strong>Novelty & taxonomy</strong> — We score how “novel” each sequence/cluster is (distance from cluster center). If BLAST is set up, we optionally annotate clusters with the best match from a reference database.</li>
+          </ol>
+          <p>So in short: <strong>upload FASTA → k-mers → UMAP → cluster (HDBSCAN) → biodiversity + 2D plot + optional taxonomy.</strong></p>
+        </div>
+      </section>
+
+      <div class="grid">
+        <div class="card">
+          <h2><span class="step">1</span> Upload eDNA FASTA</h2>
+          <label for="fasta">FASTA file (.fa, .fasta, .fna)</label>
+          <div class="file-zone" id="file-zone">
+            <input id="fasta" type="file" accept=".fa,.fasta,.fna" />
+            <span class="prompt">Click or drag a file here</span>
+            <span class="filename" id="filename"></span>
+          </div>
+          <div class="btn-row">
+            <button id="run-btn" class="button primary">Run analysis</button>
+            <button id="download-json" class="button secondary">JSON</button>
+            <button id="download-csv" class="button secondary">CSV</button>
+          </div>
+          <div id="status" class="status"></div>
+          <div id="metrics" class="metrics" style="display: none"></div>
+          <div id="taxonomy-card" style="display: none">
+            <h2><span class="step">3</span> Cluster taxonomy &amp; novelty</h2>
+            <div class="table-wrap">
+              <table id="taxonomy-table">
+                <thead>
+                  <tr>
+                    <th>Cluster</th>
+                    <th>Size</th>
+                    <th>Best identity</th>
+                    <th>Novelty</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span class="step">2</span> Cluster landscape</h2>
+          <div id="plot"></div>
+        </div>
+      </div>
+
+      <p class="footer">
+        Prototype: add benchmarking vs. reference-based tools, model tuning on deep-sea
+        datasets, detailed taxonomic annotation, and deployment/CI for routine cruises.
+      </p>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>
